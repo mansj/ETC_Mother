@@ -12,11 +12,11 @@ def init (etc_object) :
     global inp, etc, trig_this_time, trig_last_time, sin
     etc = etc_object
     #setup alsa for sound in
-    inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE,alsaaudio.PCM_NONBLOCK)
-    inp.setchannels(1)
-    inp.setrate(8000)
-    inp.setformat(alsaaudio.PCM_FORMAT_S16_LE)
-    inp.setperiodsize(300)
+    #inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE,alsaaudio.PCM_NONBLOCK)
+    #inp.setchannels(1)
+    #inp.setrate(8000)
+    #inp.setformat(alsaaudio.PCM_FORMAT_S16_LE)
+    #inp.setperiodsize(300)
     trig_last_time = time.time()
     trig_this_time = time.time()
     

@@ -6,10 +6,12 @@ import sys
 import psutil
 #from pygame.locals import *
 import osc
-import sound
+#import sound
 import osd
 import liblo
 import midi
+
+import random
 print "starting..."
 
 # create etc object
@@ -24,7 +26,7 @@ etc.clear_flags()
 osc.init(etc)
 
 # setup alsa sound
-sound.init(etc)
+#sound.init(etc)
 
 # init pygame, this has to happen after sound is setup
 # but before the graphics stuff below
@@ -38,7 +40,7 @@ osc.send("/led", 7) # set led to running
 # set midi ch, check for file, default to 1
 ch = 1
 try :
-    file = open("/usbdrive/MIDI-Channel.txt", "r")
+    file = open("/home/pi/MIDI-Channel.txt", "r")
     line = file.readline()
     ch = int(line.strip())
 except IOError as (errno, strerror):
@@ -50,7 +52,8 @@ except:
     raise
 
 # force midi to 17 (0 is omni)
-etc.midi_ch = ch % 17
+#etc.midi_ch = ch % 17
+etc.midi_ch = 1
 print "set MIDI to ch " + str(etc.midi_ch)
 osc.send("/midich", int(etc.midi_ch))
 
@@ -61,7 +64,7 @@ midi.init(etc)
 print "opening frame buffer..."
 hwscreen = pygame.display.set_mode(etc.RES,  pygame.FULLSCREEN | pygame.DOUBLEBUF, 32)
 screen = pygame.Surface(hwscreen.get_size())
-screen.fill((0,0,0)) 
+screen.fill((0,0,0))
 hwscreen.blit(screen, (0,0))
 pygame.display.flip()
 hwscreen.blit(screen, (0,0))
@@ -69,7 +72,7 @@ pygame.display.flip()
 osd.loading_banner(hwscreen, "")
 time.sleep(2)
 
-# etc gets a refrence to screen so it can save screen grabs 
+# etc gets a refrence to screen so it can save screen grabs
 etc.screen = screen
 print str(etc.screen) + " " +  str(screen)
 
@@ -96,8 +99,8 @@ for i in range(0, len(etc.mode_names)-1) :
         mode = sys.modules[etc.mode]
     except AttributeError :
         print "mode not found, probably has error"
-        continue 
-    try : 
+        continue
+    try :
         osd.loading_banner(hwscreen,"Loading " + str(etc.mode) )
         mode.setup(screen, etc)
         etc.memory_used = psutil.virtual_memory()[2]
@@ -126,12 +129,12 @@ mode = sys.modules[etc.mode]
 midi_led_flashing = False
 
 while 1:
-    
+
     # check for OSC
     osc.recv()
 
     # send get midi and knobs for next time
-    osc.send("/nf", 1) 
+    osc.send("/nf", 1)
 
     # stop a midi led flash if one is hapenning
     if (midi_led_flashing):
@@ -139,7 +142,7 @@ while 1:
         osc.send("/led", 7)
 
     # check for midi from USB
-    midi.poll() 
+    midi.poll()
     if (etc.new_midi) :
         osc.send("/led", 2)
         midi_led_flashing = True
@@ -157,6 +160,31 @@ while 1:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 exit()
+            elif event.key == pygame.K_q:
+                exit()
+            elif event.key == pygame.K_SPACE:
+                etc.audio_trig = True
+            elif event.key == pygame.K_z:
+                etc.audio_trig = False
+            elif event.key == pygame.K_a:
+                etc.prev_mode()
+            elif event.key == pygame.K_s:
+                etc.next_mode()
+            elif event.key == pygame.K_r:
+                etc.reload_mode()
+            elif event.key == pygame.K_1:
+                etc.knob1 = random.random()
+            elif event.key == pygame.K_2:
+                etc.knob2 = random.random()
+            elif event.key == pygame.K_3:
+                etc.knob3 = random.random()
+            elif event.key == pygame.K_4:
+                etc.knob4 = random.random()
+            elif event.key == pygame.K_5:
+                etc.knob5 = random.random()
+            elif event.key == pygame.K_o:
+                etc.osd = not etc.osd
+
 
     # measure fps
     etc.frame_count += 1
@@ -166,10 +194,10 @@ while 1:
         start = now
 
     # check for sound
-    sound.recv()
+    #sound.recv()
 
     # set the mode on which to call draw
-    try : 
+    try :
         mode = sys.modules[etc.mode]
     except :
         #print "mode not loaded, probably has errors"
@@ -180,15 +208,15 @@ while 1:
         osc.send("/led", 6) # flash led yellow
         etc.screengrab()
         osc.send("/led", 7)
-        
+
     # see if save is being held down for deleting scene
     etc.update_scene_save_key()
 
     # clear it with bg color if auto clear enabled
     etc.bg_color =  etc.color_picker_bg()
     if etc.auto_clear :
-        screen.fill(etc.bg_color) 
-    
+        screen.fill(etc.bg_color)
+
     # run setup (usually if the mode was reloaded)
     if etc.run_setup :
         etc.error = ''
@@ -197,17 +225,17 @@ while 1:
         except Exception, e:
             etc.error = traceback.format_exc()
             print "error with setup: " + etc.error
-   
+
     # draw it
     try :
         mode.draw(screen, etc)
     except Exception, e:
         etc.error = traceback.format_exc()
- 
+
     #draw the main screen, limit fps 30
     clocker.tick(30)
     hwscreen.blit(screen, (0,0))
-    
+
     # osd
     if etc.osd :
         osd.render_overlay(hwscreen)
@@ -216,7 +244,7 @@ while 1:
 
     if etc.quit :
         sys.exit()
-    
+
     # clear all the events
     etc.clear_flags()
     osc_msgs_recv = 0
@@ -224,4 +252,3 @@ while 1:
 time.sleep(1)
 
 print "Quit"
-

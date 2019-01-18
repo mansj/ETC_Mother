@@ -15,7 +15,7 @@ def parse_midi(midi):
         msg_status = int(midi_msg[0])
         msg_channel = msg_status & 0xf
         msg_type = (msg_status >> 4) & 0xf
-   
+
         # global message clock tick
         if (msg_status == 248) :
             etc.new_midi = True
@@ -29,17 +29,22 @@ def parse_midi(midi):
 
         # channel messages
         if ( (msg_channel == (etc.midi_ch - 1)) or (etc.midi_ch == 0)) :
-            
             # CC
             if (msg_type == 0xB) :
                 etc.new_midi = True
                 for i in range(0,5) :
                     if (midi_msg[1] == 21 + i) :
+
                         cc = midi_msg[2]
                         if cc != cc_last[i] :
                             etc.cc_override_knob(i, float(cc) / 127)
+                            #file = open("/tmp/etc.log", "a")
+                            #file.write("\nNOWCC: ")
+                            #file.write(str(float(cc) / 127))
+                            #file.close()
+
                             cc_last[i] = cc
- 
+
             # note OFF
             if (msg_type == 0x8) :
                 etc.new_midi = True
@@ -49,7 +54,9 @@ def parse_midi(midi):
             if (msg_type == 0x9) :
                 etc.new_midi = True
                 if (midi_msg[2] > 0) :
+                    #etc.midi_notes[midi_msg[1]] = 1
                     etc.midi_notes[midi_msg[1]] = 1
+                    etc.midi_notes_on[midi_msg[1]] = 1
                 else :
                     etc.midi_notes[midi_msg[1]] = 0
 
@@ -74,7 +81,7 @@ def _print_device_info():
             in_out = "(output)"
 
         etc.usb_midi_name = name
-    
+
         print ("%2i: interface :%s:, name :%s:, opened :%s:  %s" %
                (i, interf, name, opened, in_out))
 
@@ -89,6 +96,7 @@ def init(etc_obj) :
         _print_device_info()
 
         input_id = pygame.midi.get_default_input_id()
+	input_id = 3
 
         print ("using input_id :%s:" % input_id)
         midi_input = pygame.midi.Input( input_id )
