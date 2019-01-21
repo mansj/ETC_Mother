@@ -12,9 +12,9 @@ import csv
 
 class System:
 
-    GRABS_PATH = "/usbdrive/Grabs/"
-    MODES_PATH = "/usbdrive/Modes/"
-    SCENES_PATH = "/usbdrive/Scenes.csv"
+    GRABS_PATH = "/home/pi/ETC_Grabs/"
+    MODES_PATH = "/home/pi/ETC_Modes/"
+    SCENES_PATH = "/home/pi/Scenes.csv"
 
     RES =  (1280,720)
 
@@ -39,7 +39,7 @@ class System:
     grabcount = 0
     grabindex = 0
     screengrab_flag = False
-    
+
     # modes
     mode_names = []  # list of mode names pupulated from Modes folder on USB drive
     mode_index = 0   # index of current mode
@@ -49,24 +49,24 @@ class System:
     run_setup = False # flag to signal main loop to run setup() usually if a mode was reloaded
 
     #scenes
-    scenes = []     # 
+    scenes = []     #
     scene_index = 0
     save_key_status = False
     save_key_count = 0
     scene_set = False
-    
+
     # audio
     audio_in = [0] * 100
     audio_peak = 0
     audio_trig = False
-    
-    # knobs a used by mode 
+
+    # knobs a used by mode
     knob1 = .200
     knob2 = .200
     knob3 = .200
     knob4 = .200
     knob5 = .200
-   
+
     # knob values used internally
     knob = [.2] * 5
     knob_hardware = [.2] * 5
@@ -75,6 +75,7 @@ class System:
 
     # midi stuff (CC gets updated into knobs
     midi_notes = [0] * 128
+    midi_notes_on = [0] * 128
     midi_notes_last = [0] * 128
     midi_note_new = False
     midi_pgm = 0
@@ -85,7 +86,7 @@ class System:
     usb_midi_name = ''
     usb_midi_present = False
 
-    # system stuff 
+    # system stuff
     memory_used = 0
     ip = ''
     auto_clear = True
@@ -113,21 +114,21 @@ class System:
         self.error = ''
 
     def set_mode_by_name (self, name) :
-        self.mode = name 
+        self.mode = name
         self.mode_index = self.mode_names.index(name)
         self.mode_root = self.MODES_PATH + self.mode + "/"
         self.error = ''
 
     def next_mode (self) :
         self.mode_index += 1
-        if self.mode_index >= len(self.mode_names) : 
+        if self.mode_index >= len(self.mode_names) :
             self.mode_index = 0
         self.set_mode_by_index(self.mode_index)
         self.scene_set = False
 
     def prev_mode (self) :
         self.mode_index -= 1
-        if self.mode_index < 0 : 
+        if self.mode_index < 0 :
             self.mode_index = len(self.mode_names) - 1
         self.set_mode_by_index(self.mode_index)
         self.scene_set = False
@@ -136,13 +137,17 @@ class System:
         for i in range(0,5):
             self.knob_override[i] = True
             self.knob_snapshot[i] = self.knob_hardware[i]
-    
+
     def cc_override_knob(self, i, v) :
         self.knob_override[i] = True
         self.knob_snapshot[i] = self.knob_hardware[i]
         self.knob[i] = v
 
-    # then do this for the modes 
+	#self.knob_snapshot[i] = v
+	#self.knob_hardware[i] = v
+	#self.knob[i] = v
+
+    # then do this for the modes
     def update_knobs_and_notes(self) :
         for i in range(0, 5) :
             if self.knob_override[i] :
@@ -150,15 +155,15 @@ class System:
                     self.knob_override[i] = False
                     self.knob[i] = self.knob_hardware[i]
                     self.scene_set = False
-            else : 
+            else :
                 self.knob[i] = self.knob_hardware[i]
 
         # fill these in for convinience
-        self.knob1 = self.knob[0]
-        self.knob2 = self.knob[1]
-        self.knob3 = self.knob[2]
-        self.knob4 = self.knob[3]
-        self.knob5 = self.knob[4]
+        #self.knob1 = self.knob[0]
+        #self.knob2 = self.knob[1]
+        #self.knob3 = self.knob[2]
+        #self.knob4 = self.knob[3]
+        #self.knob5 = self.knob[4]
 
         # check for new notes
         for i in range(0, 128):
@@ -179,12 +184,9 @@ class System:
     def check_pgm_change(self):
         if (self.midi_pgm != self.midi_pgm_last):
             self.midi_pgm_last = self.midi_pgm
-            if (len(self.scenes) > 0) :
-                self.scene_index = self.midi_pgm % len(self.scenes)
-                self.recall_scene(self.scene_index)
-            else :
-                self.mode_index = self.midi_pgm % len(self.mode_names)
-                self.set_mode_by_index(self.mode_index)
+            #set_mode_by_index(self.midi_pgm)
+            self.mode_index = self.midi_pgm % len(self.mode_names)
+            self.set_mode_by_index(self.mode_index)
 
     # save a screenshot
     def screengrab(self):
@@ -231,12 +233,12 @@ class System:
             print traceback.format_exc()
         self.set_mode_by_name(new_mode)
         self.run_setup
-    
+
     # reload mode module
     def reload_mode(self) :
         # delete the old, and reload
-        if self.mode in sys.modules:  
-            del(sys.modules[self.mode]) 
+        if self.mode in sys.modules:
+            del(sys.modules[self.mode])
         print "deleted module, reloading"
         try :
             imp.load_source(self.mode, self.mode_root+'/main.py')
@@ -245,7 +247,7 @@ class System:
             self.error = traceback.format_exc()
             print "error reloading: " + self.error
         self.run_setup = True # set a flag so setup gets run from main loop
-    
+
     # recent grabs, first check if Grabs folder is available, create if not
     def load_grabs(self):
         if not(os.path.isdir(self.GRABS_PATH)) :
@@ -259,7 +261,7 @@ class System:
         self.grabindex = 0
         for i in range(0,11):
             self.tengrabs_thumbs.append(pygame.Surface((128, 72)))
-        
+
         self.lastgrab = pygame.Surface(self.RES )
         self.lastgrab_thumb = pygame.Surface((128,72) )
 
@@ -291,7 +293,7 @@ class System:
             if (self.save_key_status) :  # key release before delete happens
                 self.save_scene()
             self.save_key_status = False
-                
+
     def delete_current_scene(self):
         print "deleting scene"
         if len(self.scenes) > 0:
@@ -313,7 +315,7 @@ class System:
 	    # write it
         with open(self.SCENES_PATH, "wb") as f:
     	    writer = csv.writer(f,quoting=csv.QUOTE_MINIMAL)
-    	    writer.writerows(self.scenes) 
+    	    writer.writerows(self.scenes)
         #print "saved scenes: " + str(self.scenes)
 
     def load_scenes(self):
@@ -346,13 +348,13 @@ class System:
 
     def next_scene(self):
         self.scene_index += 1
-        if self.scene_index >= len(self.scenes) : 
+        if self.scene_index >= len(self.scenes) :
             self.scene_index = 0
         self.recall_scene(self.scene_index)
 
     def prev_scene (self) :
         self.scene_index -= 1
-        if self.scene_index < 0 : 
+        if self.scene_index < 0 :
             if len(self.scenes) > 0 :
                 self.scene_index = len(self.scenes) - 1
             else :
@@ -400,7 +402,7 @@ class System:
         # grey 4
         if c > .10 :
             color = (150, 150 ,150)
-            
+
         # grey 5
         if c > .12 :
             color = (200, 200 ,200)
@@ -409,11 +411,11 @@ class System:
             color = (250, 250 ,250)
         #colors
         if c > .16 :
-            
+
             #r = float(control) / 1024 * 255
             #g = float((control * 2) % 1024) / 1024 * 255
             #b = float((control * 4) % 1024) / 1024 * 255
-            
+
             r = math.sin(c * 2 * math.pi) * .5 + .5
             g = math.sin(c * 4 * math.pi) * .5 + .5
             b = math.sin(c * 8 * math.pi) * .5 + .5
@@ -427,18 +429,18 @@ class System:
             g = random.randrange(0, 2) * 255
             b = random.randrange(0, 2) * 255
             color = (r,g,b)
-        
+
         color2 = (color[0], color[1], color[2])
         return color2
- 
+
     def color_picker_bg( self ):
         c = self.knob5
         r = (1 - (math.cos(c * 3 * math.pi) * .5 + .5)) * c
         g = (1 - (math.cos(c * 7 * math.pi) * .5 + .5)) * c
         b = (1 - (math.cos(c * 11 * math.pi) * .5 + .5)) * c
-        
+
         color = (r * 255,g * 255,b * 255)
-        
+
         self.bg_color = color
         return color
 
@@ -450,6 +452,4 @@ class System:
         self.midi_note_new = False
         for i in range(0, 128):
             self.midi_notes_last[i] = self.midi_notes[i]
-
-
-
+            self.midi_notes_on[i] = 0
