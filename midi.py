@@ -37,7 +37,7 @@ def parse_midi(midi):
 
                         cc = midi_msg[2]
                         if cc != cc_last[i] :
-                            etc.cc_override_knob(i, float(cc) / 127)
+                            #etc.cc_override_knob(i, float(cc) / 127)
                             #file = open("/tmp/etc.log", "a")
                             #file.write("\nNOWCC: ")
                             #file.write(str(float(cc) / 127))

@@ -158,6 +158,7 @@ class System:
             else :
                 self.knob[i] = self.knob_hardware[i]
 
+
         # fill these in for convinience
         #self.knob1 = self.knob[0]
         #self.knob2 = self.knob[1]
@@ -184,7 +185,6 @@ class System:
     def check_pgm_change(self):
         if (self.midi_pgm != self.midi_pgm_last):
             self.midi_pgm_last = self.midi_pgm
-            #set_mode_by_index(self.midi_pgm)
             self.mode_index = self.midi_pgm % len(self.mode_names)
             self.set_mode_by_index(self.mode_index)
 

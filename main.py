@@ -11,6 +11,8 @@ import osd
 import liblo
 import midi
 
+import rotary
+
 import random
 print "starting..."
 
@@ -35,6 +37,7 @@ clocker = pygame.time.Clock() # for locking fps
 
 # on screen display and other screen helpers
 osd.init(etc)
+rotary.init(etc)
 osc.send("/led", 7) # set led to running
 
 # set midi ch, check for file, default to 1
