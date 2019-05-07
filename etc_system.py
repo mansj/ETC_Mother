@@ -160,11 +160,11 @@ class System:
 
 
         # fill these in for convinience
-        #self.knob1 = self.knob[0]
-        #self.knob2 = self.knob[1]
-        #self.knob3 = self.knob[2]
-        #self.knob4 = self.knob[3]
-        #self.knob5 = self.knob[4]
+        self.knob1 = self.knob[0]
+        self.knob2 = self.knob[1]
+        self.knob3 = self.knob[2]
+        self.knob4 = self.knob[3]
+        self.knob5 = self.knob[4]
 
         # check for new notes
         for i in range(0, 128):
