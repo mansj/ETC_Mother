@@ -9,9 +9,9 @@ import osc
 #import sound
 import osd
 import liblo
-import midi
+#import midi
 
-import rotary
+#import rotary
 
 import random
 print "starting..."
@@ -37,7 +37,7 @@ clocker = pygame.time.Clock() # for locking fps
 
 # on screen display and other screen helpers
 osd.init(etc)
-rotary.init(etc)
+#rotary.init(etc)
 osc.send("/led", 7) # set led to running
 
 # set midi ch, check for file, default to 1
@@ -61,11 +61,12 @@ print "set MIDI to ch " + str(etc.midi_ch)
 osc.send("/midich", int(etc.midi_ch))
 
 # setup midi input from USB
-midi.init(etc)
+#midi.init(etc)
 
 # init fb and main surfaces
 print "opening frame buffer..."
-hwscreen = pygame.display.set_mode(etc.RES,  pygame.FULLSCREEN | pygame.DOUBLEBUF, 32)
+#hwscreen = pygame.display.set_mode(etc.RES,  pygame.FULLSCREEN | pygame.DOUBLEBUF, 32)
+hwscreen = pygame.display.set_mode(etc.RES,  pygame.DOUBLEBUF, 32)
 screen = pygame.Surface(hwscreen.get_size())
 screen.fill((0,0,0))
 hwscreen.blit(screen, (0,0))
@@ -145,7 +146,7 @@ while 1:
         osc.send("/led", 7)
 
     # check for midi from USB
-    midi.poll()
+    #midi.poll()
     if (etc.new_midi) :
         osc.send("/led", 2)
         midi_led_flashing = True
@@ -154,7 +155,7 @@ while 1:
     etc.update_knobs_and_notes()
 
     # check for midi program change
-    etc.check_pgm_change()
+    #etc.check_pgm_change()
 
     # quit on esc
     for event in pygame.event.get():
@@ -170,10 +171,13 @@ while 1:
             elif event.key == pygame.K_z:
                 etc.audio_trig = False
             elif event.key == pygame.K_a:
+                print "Load previous mode"
                 etc.prev_mode()
             elif event.key == pygame.K_s:
+                print "Load next mode"
                 etc.next_mode()
             elif event.key == pygame.K_r:
+                print "Reaload mode"
                 etc.reload_mode()
             elif event.key == pygame.K_1:
                 etc.knob1 = random.random()

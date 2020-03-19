@@ -10,11 +10,30 @@ import sys
 import helpers
 import csv
 
+from pyfirmata import Arduino, util
+board = Arduino('/dev/tty.usbmodem144301')
+
+it = util.Iterator(board)
+it.start()
+board.analog[0].enable_reporting()
+board.analog[1].enable_reporting()
+board.analog[2].enable_reporting()
+board.analog[3].enable_reporting()
+board.analog[4].enable_reporting()
+
+analog_0 = board.get_pin('a:0:i')
+analog_1 = board.get_pin('a:1:i')
+analog_2 = board.get_pin('a:2:i')
+analog_3 = board.get_pin('a:3:i')
+analog_4 = board.get_pin('a:4:i')
+
+
+
 class System:
 
-    GRABS_PATH = "/home/pi/ETC_Grabs/"
-    MODES_PATH = "/home/pi/ETC_Modes/"
-    SCENES_PATH = "/home/pi/Scenes.csv"
+    GRABS_PATH = "/Users/mans.jonasson/git/ETC_Mother/ETC_Grabs/"
+    MODES_PATH = "/Users/mans.jonasson/git/ETC_Mother/modes/"
+    SCENES_PATH = "/Users/mans.jonasson/git/ETC_Mother/Scenes.csv"
 
     RES =  (1280,720)
 
@@ -110,7 +129,9 @@ class System:
     def set_mode_by_index (self, index) :
         self.mode_index = index
         self.mode = self.mode_names[self.mode_index]
+        print "Mode: " + self.mode
         self.mode_root = self.MODES_PATH + self.mode + "/"
+        print "Mode root: " + self.mode_root
         self.error = ''
 
     def set_mode_by_name (self, name) :
@@ -158,6 +179,11 @@ class System:
             else :
                 self.knob[i] = self.knob_hardware[i]
 
+        self.knob[0] = analog_0.read()
+        self.knob[1] = analog_1.read()
+        self.knob[2] = analog_2.read()
+        self.knob[3] = analog_3.read()
+        self.knob[4] = analog_4.read()
 
         # fill these in for convinience
         self.knob1 = self.knob[0]
